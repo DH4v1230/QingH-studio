@@ -5,7 +5,7 @@
 // ============================================================
 
 // ---------- JWT helpers (HMAC-SHA256 via Web Crypto) ----------
-const JWT_SECRET_KEY = 'qingh-jwt-secret-key-change-in-production';
+let JWT_SECRET_KEY = 'qingh-jwt-secret-key-change-in-production';
 
 async function hmacSha256(key, data) {
   const enc = new TextEncoder();
@@ -98,6 +98,9 @@ export default {
     }
 
     try {
+      // Apply JWT secret from env
+      if (env.JWT_SECRET) JWT_SECRET_KEY = env.JWT_SECRET;
+
       // ---- Public routes ----
       if (path === '/api/register' && method === 'POST') return handleRegister(request, env);
       if (path === '/api/login' && method === 'POST') return handleLogin(request, env);
