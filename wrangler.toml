@@ -1,0 +1,18 @@
+# ============================================================
+# QingH Studio — Cloudflare Pages 配置
+# 前端 + API 共用 qingh-studio.pages.dev
+# ============================================================
+name = "qingh-studio"
+pages_build_output_dir = ".pages-deploy"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---- D1 数据库绑定 ----
+[[d1_databases]]
+binding = "DB"
+database_name = "qingh-db"
+database_id = "2e10832c-4e42-4a23-b6db-7d80d037d488"
+
+# ---- 环境变量 ----
+[vars]
+JWT_SECRET = "be368fdb95231c153512ef529ec662e4a399214a3f31611b97a51bddfd77e7f5"

@@ -1,0 +1,6 @@
+# Cloudflare Wrangler 缓存
+.wrangler/
+cloudflare/.wrangler/
+
+# 临时部署目录
+.pages-deploy/
