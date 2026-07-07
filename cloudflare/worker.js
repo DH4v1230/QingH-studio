@@ -104,6 +104,7 @@ export default {
       // ---- Public routes ----
       if (path === '/api/register' && method === 'POST') return handleRegister(request, env);
       if (path === '/api/login' && method === 'POST') return handleLogin(request, env);
+      if (path === '/api/health') return json({ ok: true });
 
       // ---- Protected routes (require JWT) ----
       const user = await authUser(request, env);
@@ -161,9 +162,6 @@ export default {
       // User profile
       if (path === '/api/user' && method === 'GET') return getUserProfile(request, env, user);
       if (path === '/api/user/api-key' && method === 'PUT') return updateApiKey(request, env, user);
-
-      // Health check
-      if (path === '/api/health') return json({ ok: true });
 
       return json({ error: 'Not found' }, 404);
     } catch (e) {
