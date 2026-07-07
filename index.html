@@ -2,7 +2,15 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover,shrink-to-fit=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QingH Studio">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f0f14">
+<meta name="format-detection" content="telephone=no">
+<meta name="HandheldFriendly" content="true">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><rect width='180' height='180' rx='36' fill='%230f0f14'/><text x='90' y='110' text-anchor='middle' font-size='80' fill='white'>✨</text></svg>">
 <title>QingH Studio — 小说创作 & 智能对话</title>
 <style>
 /* ===== VARIABLES ===== */
@@ -17,17 +25,23 @@
   --font-mono:'JetBrains Mono','Cascadia Code','Fira Code','Consolas',monospace;
   --font-sans:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
   --sidebar-w:280px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+  --touch-target:44px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:16px;-webkit-font-smoothing:antialiased}
-body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+html{font-size:16px;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,a,select,input[type="file"]{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:100vh;height:100dvh;overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-overflow-scrolling:touch;touch-action:manipulation}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
 
 /* ===== APP LAYOUT ===== */
-.app-layout{display:flex;height:100vh}
+.app-layout{display:flex;height:100vh;height:100dvh;overscroll-behavior:none}
 
 /* ===== SIDEBAR ===== */
 .sidebar{
@@ -35,6 +49,29 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
   background:var(--surface);border-right:1px solid var(--border);
   display:flex;flex-direction:column;z-index:20;
   overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+
+/* Hamburger button — hidden on desktop */
+.hamburger{
+  display:none;align-items:center;justify-content:center;
+  width:var(--touch-target);height:var(--touch-target);
+  border:none;background:transparent;color:var(--text);
+  cursor:pointer;font-size:1.3rem;flex-shrink:0;
+  border-radius:50%;transition:var(--transition);
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger:active{background:var(--surface-3)}
+
+/* Sidebar close button — hidden on desktop */
+.sidebar-header .hamburger-close{display:none}
+
+/* Sidebar backdrop — hidden on desktop */
+.sidebar-backdrop{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+  z-index:19;animation:fadeIn .2s ease;
+  -webkit-tap-highlight-color:transparent;
 }
 
 .sidebar-header{
@@ -152,7 +189,7 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
 .active-world-bar .aw-clear:hover{color:var(--error);background:rgba(248,113,113,.1)}
 
 /* Chat container */
-.chat-container{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:18px}
+.chat-container{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:18px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 
 .welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;gap:12px}
 .welcome-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:4px;box-shadow:0 8px 32px var(--accent-glow)}
@@ -359,22 +396,233 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
 .toast.info{background:#1e1b4b;color:#a5b4fc;border:1px solid rgba(165,180,252,.3)}
 @keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
 
-/* ===== RESPONSIVE ===== */
+/* ===== CLOUD / AUTH STYLES ===== */
+.user-area{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.user-area .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;flex-shrink:0}
+.user-area .user-info{flex:1;min-width:0}
+.user-area .user-email{font-size:.78rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-area .user-vip{font-size:.62rem;color:var(--text-muted)}
+.user-area .user-vip.vip{color:#f59e0b;font-weight:600}
+.user-area .user-logout{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center;transition:var(--transition);flex-shrink:0}
+.user-area .user-logout:hover{background:rgba(248,113,113,.15);color:var(--error);border-color:var(--error)}
+.login-prompt{text-align:center;padding:12px 10px;font-size:.74rem;color:var(--text-muted)}
+.login-prompt button{display:block;width:100%;margin-top:6px;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-size:.8rem;transition:var(--transition);font-family:var(--font-sans)}
+.login-prompt button:hover{background:#9178ff}
+
+/* Session list */
+.session-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);font-size:.82rem}
+.session-item:hover{background:var(--surface-2)}
+.session-item.active{background:var(--surface-3);outline:1px solid var(--accent)}
+.session-item .ses-icon{flex-shrink:0;font-size:.85rem}
+.session-item .ses-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.session-item .ses-del{width:22px;height:22px;border-radius:50%;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;opacity:0;transition:var(--transition);flex-shrink:0}
+.session-item:hover .ses-del{opacity:1}
+.session-item .ses-del:hover{background:rgba(248,113,113,.2);color:var(--error)}
+.session-item .ses-synced{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0}
+
+/* Cloud sync status bar */
+.sync-status{display:flex;align-items:center;gap:6px;padding:4px 14px;font-size:.68rem;color:var(--text-muted);border-top:1px solid var(--border);flex-shrink:0}
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sync-dot.synced{background:var(--success)}
+.sync-dot.syncing{background:var(--warning);animation:pulse-sync 1s infinite}
+.sync-dot.error{background:var(--error)}
+.sync-dot.offline{background:var(--text-muted)}
+@keyframes pulse-sync{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* Auth modal tabs */
+.auth-tabs{display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.auth-tab{flex:1;padding:10px 0;text-align:center;font-size:.84rem;cursor:pointer;background:var(--surface-2);color:var(--text-secondary);border:none;transition:var(--transition);font-family:var(--font-sans)}
+.auth-tab.active{background:var(--accent);color:#fff}
+.auth-tab:hover:not(.active){background:var(--surface-3)}
+
+/* VIP badge */
+.vip-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:600}
+.vip-badge.free{background:rgba(107,107,128,.2);color:var(--text-muted)}
+.vip-badge.pro{background:rgba(245,158,11,.2);color:#f59e0b}
+
+/* Mobile auth/layout adjustments */
 @media(max-width:768px){
-  .sidebar{width:240px;min-width:240px}
-  .item-row{font-size:.8rem;padding:6px 8px}
-  .section-header{font-size:.7rem;padding:8px 12px 4px}
+  .user-area{padding:8px 12px}
+  .user-area .user-email{font-size:.74rem}
+  .session-item{padding:10px 12px;min-height:var(--touch-target)}
+  .login-prompt{padding:10px 8px;font-size:.72rem}
+  .login-prompt button{padding:10px}
+  .sync-status{padding:6px 12px}
+  .auth-tab{padding:12px 0;font-size:.8rem}
 }
-@media(max-width:560px){
-  .app-layout{flex-direction:column}
-  .sidebar{width:100%;min-width:100%;max-height:200px;flex-shrink:1;border-right:none;border-bottom:1px solid var(--border)}
-  .sidebar-header{padding:10px 14px}
-  .sidebar-section{padding:2px 0}
-  .item-list{display:flex;gap:6px;padding:4px 8px;overflow-x:auto}
-  .item-row{flex-shrink:0;white-space:nowrap;padding:6px 10px}
-  .sidebar-footer{padding:8px 10px}
-  .main-area{min-height:0}
-  .modal{max-width:95%;padding:18px}
+
+/* Modal forms — extra fields */
+.form-hint{font-size:.72rem;color:var(--text-muted);margin-top:4px}
+.form-error{font-size:.74rem;color:var(--error);margin-top:4px;display:none}
+
+/* ===== RESPONSIVE — TABLET (≤900px) ===== */
+
+@media(max-width:900px){
+  :root{--sidebar-w:260px}
+  .message{max-width:100%}
+  .input-wrapper{max-width:100%}
+}
+
+/* ===== RESPONSIVE — MOBILE (≤768px) ===== */
+@media(max-width:768px){
+  :root{--sidebar-w:300px}
+
+  /* Show hamburger */
+  .hamburger{display:flex}
+
+  /* Sidebar → overlay mode */
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;
+    width:var(--sidebar-w);min-width:var(--sidebar-w);
+    max-width:85vw;height:100%;height:100dvh;
+    transform:translateX(-100%);
+    z-index:30;box-shadow:4px 0 24px rgba(0,0,0,.5);
+    border-radius:0 var(--radius-lg) var(--radius-lg) 0;
+    padding-top:var(--safe-top);
+    will-change:transform;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-backdrop{display:block}
+
+  /* Main area full-width */
+  .main-area{width:100%}
+
+  /* Active world bar — add hamburger */
+  .active-world-bar{padding-left:8px;gap:6px;min-height:var(--touch-target)}
+  .active-world-bar .aw-clear{padding:4px 10px;font-size:.72rem}
+
+  /* Chat container */
+  .chat-container{padding:12px;gap:12px}
+
+  /* Messages */
+  .message{gap:8px;max-width:100%}
+  .message-avatar{width:30px;height:30px;font-size:.75rem}
+  .message-bubble{padding:10px 13px;font-size:.88rem;border-radius:var(--radius)}
+  .message.user .message-bubble{border-bottom-right-radius:4px}
+  .message.assistant .message-bubble{border-bottom-left-radius:4px}
+  .message-bubble pre{padding:10px 12px;font-size:.78rem}
+  .message.assistant .message-bubble.novel-content{font-size:.9rem;line-height:1.8}
+
+  /* Always show message actions on mobile (no hover) */
+  .msg-actions{opacity:1}
+  .msg-actions button{padding:4px 10px;font-size:.72rem}
+
+  /* Input area — safe area aware */
+  .input-area{padding:8px 12px calc(8px + var(--safe-bottom))}
+  .input-row{gap:6px}
+  .input-box textarea{font-size:.88rem;padding:10px 12px;min-height:44px}
+  .input-expand-hint{display:none}
+  .send-btn{width:var(--touch-target);height:var(--touch-target);font-size:1rem}
+  .attach-btn{width:var(--touch-target);height:var(--touch-target)}
+
+  /* File chips */
+  .file-chip{font-size:.74rem;padding:4px 8px 4px 6px}
+
+  /* Supplement bar */
+  .sup-bar{padding:4px 10px;flex-wrap:wrap;gap:6px}
+  .sup-bar .hamburger{margin-right:2px;flex-shrink:0}
+  .sup-bar .sup-left{gap:4px}
+  .sup-bar .sup-label{font-size:.72rem}
+  .sup-bar .sup-chip{font-size:.7rem;padding:3px 8px;max-width:200px}
+  .sup-bar .sup-add-row input{width:160px;font-size:.74rem}
+  .sup-bar .sup-add-row input:focus{width:220px}
+  .sup-bar .sup-chip.editing input{width:180px}
+
+  /* Context bar */
+  .context-bar{padding:3px 10px;font-size:.68rem;gap:6px}
+
+  /* Sidebar header */
+  .sidebar-header{padding:12px 14px;font-size:1rem}
+  .sidebar-header .hamburger-close{
+    display:flex;align-items:center;justify-content:center;
+    width:var(--touch-target);height:var(--touch-target);
+    border:none;background:transparent;color:var(--text-muted);
+    font-size:1.1rem;cursor:pointer;border-radius:50%;
+    margin-left:auto;transition:var(--transition);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .sidebar-header .hamburger-close:active{background:var(--surface-3);color:var(--text)}
+
+  /* Sidebar items — bigger touch targets */
+  .item-row{padding:10px 12px;font-size:.85rem;min-height:var(--touch-target)}
+  .item-row .item-meta{font-size:.7rem}
+  .item-row .item-actions{opacity:1}
+  .item-actions button{width:28px;height:28px;font-size:.72rem}
+  .item-row .expand-arrow{display:inline-block;margin-left:auto;color:var(--text-muted);font-size:.65rem}
+
+  .archive-group{padding:8px 12px;font-size:.82rem;min-height:var(--touch-target)}
+  .sub-item{padding:6px 10px;font-size:.76rem}
+  .sub-item .sub-actions{opacity:1}
+  .sub-item .sub-actions button{width:24px;height:24px;font-size:.65rem}
+
+  .sidebar-footer{padding:10px 12px calc(10px + var(--safe-bottom));gap:6px}
+  .sidebar-footer button{padding:10px 4px;font-size:.76rem;min-height:var(--touch-target)}
+
+  /* Modals — full-width on mobile */
+  .modal-overlay{align-items:flex-end;padding-bottom:var(--safe-bottom)}
+  .modal{max-width:100%;width:100%;border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:20px 18px;max-height:85vh;max-height:85dvh;animation:slideUpMobile .3s ease}
+  @keyframes slideUpMobile{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+  .modal h3{font-size:1rem;margin-bottom:10px}
+  .modal p{font-size:.8rem}
+  .form-row{flex-direction:column;gap:8px}
+  .form-group{margin-bottom:10px}
+  .form-group label{font-size:.76rem}
+  .form-group input,.form-group select,.form-group textarea{font-size:.84rem;padding:8px 12px}
+  .form-group textarea{min-height:60px}
+  .form-group textarea.expandable.expanded{min-height:160px!important}
+  .modal-actions{margin-top:14px;gap:8px;flex-wrap:wrap}
+  .modal-actions .btn{padding:8px 16px;font-size:.82rem}
+  .btn-sm{padding:6px 12px;font-size:.76rem}
+
+  /* Color picker — bigger swatches */
+  .color-picker label{width:32px;height:32px}
+
+  /* Toast */
+  .toast-container{top:auto;bottom:80px;right:10px;left:10px;gap:6px}
+  .toast{max-width:100%;font-size:.8rem;padding:8px 14px}
+
+  /* Welcome screen */
+  .welcome-icon{width:56px;height:56px;font-size:1.4rem}
+  .welcome h2{font-size:1.2rem}
+  .welcome p{font-size:.82rem;padding:0 10px}
+
+  /* Section headers in sidebar */
+  .section-header{padding:10px 14px 6px;font-size:.72rem}
+  .section-header button{width:30px;height:30px;font-size:.8rem}
+  .item-list{padding:2px 8px 8px}
+}
+
+/* ===== RESPONSIVE — SMALL PHONE (≤400px) ===== */
+@media(max-width:400px){
+  :root{--sidebar-w:280px}
+  .message-bubble{font-size:.84rem;padding:9px 11px}
+  .message-bubble pre{font-size:.74rem;padding:8px 10px}
+  .message-avatar{width:26px;height:26px;font-size:.7rem}
+  .input-box textarea{font-size:.84rem}
+  .modal{padding:16px 14px}
+  .modal h3{font-size:.95rem}
+}
+
+/* ===== LANDSCAPE MOBILE ===== */
+@media(max-width:900px) and (orientation:landscape){
+  .sidebar{max-width:60vw}
+  .chat-container{padding:8px 16px}
+  .input-area{padding:6px 16px}
+  .modal{max-height:90vh;max-height:90dvh}
+}
+
+/* ===== HIGH-DPI TOUCH SCREENS ===== */
+@media(hover:none) and (pointer:coarse){
+  /* Always-visible actions — no hover on touch devices */
+  .item-row .item-actions,
+  .sub-item .sub-actions,
+  .msg-actions{opacity:1}
+
+  /* Prevent iOS zoom on input focus */
+  input[type="text"],input[type="password"],textarea,select{font-size:16px!important}
+
+  /* Larger scrollbar for touch */
+  ::-webkit-scrollbar{width:6px}
 }
 </style>
 </head>
@@ -392,6 +640,35 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
       <defs><linearGradient id="g" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#7c5cfc"/><stop offset="1" stop-color="#f062a6"/></linearGradient></defs>
     </svg>
     QingH Studio
+    <button class="hamburger-close" id="sidebarCloseBtn" title="关闭菜单" aria-label="关闭菜单">✕</button>
+  </div>
+
+  <!-- User area (shows when logged in) -->
+  <div class="user-area" id="userArea" style="display:none">
+    <div class="user-avatar" id="userAvatar">?</div>
+    <div class="user-info">
+      <div class="user-email" id="userEmailDisplay"></div>
+      <div class="user-vip" id="userVipDisplay"></div>
+    </div>
+    <button class="user-logout" id="btnLogout" title="退出登录">⏻</button>
+  </div>
+  <!-- Login prompt (shows when not logged in) -->
+  <div class="login-prompt" id="loginPrompt">
+    ☁️ 登录后同步聊天记录
+    <button id="btnShowAuth">🔑 登录 / 注册</button>
+  </div>
+
+  <!-- Chat sessions section -->
+  <div class="sidebar-section" id="sessionSection" style="display:none">
+    <div class="section-header">
+      <span>💬 对话记录</span>
+      <button id="btnNewSession" title="新建对话">+</button>
+    </div>
+    <div class="item-list" id="sessionList"></div>
+    <div class="sync-status" id="syncStatus">
+      <span class="sync-dot offline" id="syncDot"></span>
+      <span id="syncText">未登录</span>
+    </div>
   </div>
 
   <!-- World-building section -->
@@ -428,10 +705,14 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
   </div>
 </aside>
 
+<!-- Sidebar backdrop for mobile overlay -->
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
 <!-- ===== MAIN AREA ===== -->
 <main class="main-area">
   <!-- Active world indicator -->
   <div class="active-world-bar" id="activeWorldBar" style="display:none">
+    <button class="hamburger" id="hamburgerBtn" title="菜单" aria-label="打开菜单">☰</button>
     <span>🌍</span>
     <span class="aw-dot" id="awDot"></span>
     <span class="aw-name" id="awName"></span>
@@ -441,6 +722,7 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
 
   <!-- Supplement bar — always visible, scrollable chip row -->
   <div class="sup-bar" id="supBar">
+    <button class="hamburger" id="hamburgerBtn2" title="菜单" aria-label="打开菜单">☰</button>
     <span class="sup-left">
       <span class="sup-dot" id="supDot"></span>
       <span class="sup-label">补充设定</span>
@@ -593,15 +875,74 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
   </div>
 </div>
 
+<!-- Auth Modal (Login/Register) -->
+<div class="modal-overlay" id="authModal" style="display:none">
+  <div class="modal">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin">🔑 登录</button>
+      <button class="auth-tab" id="tabRegister">📝 注册</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="loginPassword" placeholder="至少6位" autocomplete="current-password">
+      </div>
+      <div class="form-error" id="loginError"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnCloseAuth">取消</button>
+        <button class="btn btn-primary" id="btnLogin">🔑 登录</button>
+      </div>
+    </div>
+
+    <!-- Register form -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="regPassword" placeholder="至少6位" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>确认密码</label>
+        <input type="password" id="regPassword2" placeholder="再次输入密码">
+      </div>
+      <div class="form-error" id="regError"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnCloseAuth2">取消</button>
+        <button class="btn btn-primary" id="btnRegister">📝 注册</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
 /* ==================================================================
-   QingH Studio v4 — 侧边栏 · 世界观 · 角色卡 · 导出 · 完整上下文
-   所有数据仅存 localStorage
+   QingH Studio v5 — 侧边栏 · 世界观 · 角色卡 · 导出 · 云端同步
+   数据存 localStorage + Cloudflare D1 云同步
    ================================================================== */
+
+// ---------- 云 API 地址（部署后替换为你的 Worker URL）----------
+const CLOUDFLARE_WORKER_URL = 'https://qingh-studio.YOUR_USERNAME.workers.dev';
+const API = CLOUDFLARE_WORKER_URL + '/api';
+
+// ---------- 云端状态 ----------
+let authToken = localStorage.getItem('qingh_token') || '';
+let authUser = null;
+try { authUser = JSON.parse(localStorage.getItem('qingh_user') || 'null'); } catch { authUser = null; }
+let currentSessionId = localStorage.getItem('qingh_session_id') || '';
+let cloudSessions = [];
 
 // ==================== WORLD COLORS ====================
 const WORLD_COLORS = ['#7c5cfc','#f062a6','#4ade80','#fbbf24','#38bdf8','#f87171','#a78bfa','#fb923c','#2dd4bf','#e879f9','#f472b6','#818cf8'];
@@ -719,9 +1060,476 @@ const dom={
   contextWorld:$('#contextWorld'), contextDot:$('#contextDot'),
   contextStatus:$('#contextStatus'),
   toastContainer:$('#toastContainer'),
+  hamburgerBtn:$('#hamburgerBtn'), hamburgerBtn2:$('#hamburgerBtn2'),
+  sidebarCloseBtn:$('#sidebarCloseBtn'), sidebarBackdrop:$('#sidebarBackdrop'),
+  sidebar:$('#sidebar'),
+  // Cloud / Auth
+  authModal:$('#authModal'), loginForm:$('#loginForm'), registerForm:$('#registerForm'),
+  loginEmail:$('#loginEmail'), loginPassword:$('#loginPassword'), loginError:$('#loginError'),
+  regEmail:$('#regEmail'), regPassword:$('#regPassword'), regPassword2:$('#regPassword2'), regError:$('#regError'),
+  btnLogin:$('#btnLogin'), btnRegister:$('#btnRegister'), btnShowAuth:$('#btnShowAuth'),
+  btnCloseAuth:$('#btnCloseAuth'), btnCloseAuth2:$('#btnCloseAuth2'),
+  tabLogin:$('#tabLogin'), tabRegister:$('#tabRegister'),
+  userArea:$('#userArea'), userAvatar:$('#userAvatar'), userEmailDisplay:$('#userEmailDisplay'),
+  userVipDisplay:$('#userVipDisplay'), btnLogout:$('#btnLogout'),
+  loginPrompt:$('#loginPrompt'),
+  sessionList:$('#sessionList'), sessionSection:$('#sessionSection'),
+  btnNewSession:$('#btnNewSession'),
+  syncDot:$('#syncDot'), syncText:$('#syncText'),
 };
 // For confirm callback
 let _confirmCallback = null;
+
+// ==================== CLOUD API HELPERS ====================
+async function cloudFetch(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(API + path, { ...opts, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function cloudSyncAll() {
+  if (!authToken || !currentSessionId) return;
+  updateSyncStatus('syncing', '同步中…');
+  try {
+    // Push messages
+    const msgsToSync = state.messages.filter(m => m.role !== 'system');
+    await cloudFetch(`/sessions/${currentSessionId}/messages`, {
+      method: 'POST', body: JSON.stringify({ messages: msgsToSync }),
+    });
+    // Push supplements
+    if (state.supNote) {
+      await cloudFetch(`/sessions/${currentSessionId}/supplements`, {
+        method: 'POST', body: JSON.stringify({ notes: state.supNote.split('\n').filter(Boolean) }),
+      });
+    }
+    // Push worlds & characters
+    if (state.worlds.length > 0) {
+      await cloudFetch('/worlds', { method: 'POST', body: JSON.stringify({ worlds: state.worlds }) });
+    }
+    if (state.characters.length > 0) {
+      await cloudFetch('/characters', { method: 'POST', body: JSON.stringify({ characters: state.characters }) });
+    }
+    updateSyncStatus('synced', '已同步');
+  } catch (e) {
+    console.error('Sync error:', e);
+    updateSyncStatus('error', '同步失败');
+  }
+}
+
+async function cloudPull(loadMessages = false) {
+  if (!authToken) return;
+  try {
+    // Pull worlds
+    const worlds = await cloudFetch('/worlds');
+    if (worlds.length > 0) {
+      state.worlds = worlds.map(w => ({
+        id: w.id, name: w.name, color: w.color || '#7c5cfc',
+        description: w.description || '', createdAt: new Date(w.created_at).getTime()
+      }));
+    }
+    // Pull characters
+    const chars = await cloudFetch('/characters');
+    if (chars.length > 0) {
+      state.characters = chars.map(c => ({
+        id: c.id, name: c.name, worldId: c.world_id || '',
+        description: c.description || '', createdAt: new Date(c.created_at).getTime()
+      }));
+    }
+    // Pull current session messages
+    if (loadMessages && currentSessionId) {
+      const msgs = await cloudFetch(`/sessions/${currentSessionId}/messages`);
+      if (msgs.length > 0) {
+        state.messages = msgs;
+      }
+      const notes = await cloudFetch(`/sessions/${currentSessionId}/supplements`);
+      if (notes.length > 0) {
+        state.supNote = notes.join('\n');
+      }
+    }
+    saveAll(); renderWorlds(); renderChars(); renderAll(); updateUI();
+    updateSyncStatus('synced', '已同步');
+  } catch (e) {
+    console.error('Pull error:', e);
+    updateSyncStatus('error', '拉取失败');
+  }
+}
+
+async function syncSupNotes() {
+  if (!authToken || !currentSessionId) return;
+  const notes = state.supNote.split('\n').filter(Boolean);
+  cloudFetch(`/sessions/${currentSessionId}/supplements`, {
+    method: 'POST', body: JSON.stringify({ notes }),
+  }).catch(() => {});
+}
+
+function updateSyncStatus(status, text) {
+  if (dom.syncDot) {
+    dom.syncDot.className = 'sync-dot ' + status;
+    if (dom.syncText) dom.syncText.textContent = text;
+  }
+}
+
+// ==================== AUTH ====================
+function updateAuthUI() {
+  if (authToken && authUser) {
+    dom.userArea.style.display = 'flex';
+    dom.loginPrompt.style.display = 'none';
+    dom.sessionSection.style.display = 'block';
+    dom.userAvatar.textContent = (authUser.email || '?')[0].toUpperCase();
+    dom.userEmailDisplay.textContent = authUser.email || '';
+    const isVip = authUser.vip_level >= 1;
+    dom.userVipDisplay.textContent = isVip ? '⭐ VIP 会员' : '免费用户';
+    dom.userVipDisplay.className = 'user-vip' + (isVip ? ' vip' : '');
+    updateSyncStatus('synced', '已连接');
+    // Auto-pull data
+    cloudPull(true).then(() => loadCloudSessions());
+  } else {
+    dom.userArea.style.display = 'none';
+    dom.loginPrompt.style.display = 'block';
+    dom.sessionSection.style.display = 'none';
+    updateSyncStatus('offline', '未登录（数据仅在本地）');
+  }
+}
+
+function openAuthModal(tab = 'login') {
+  dom.authModal.style.display = 'flex';
+  switchAuthTab(tab);
+}
+
+function closeAuthModal() {
+  dom.authModal.style.display = 'none';
+  dom.loginError.style.display = 'none';
+  dom.regError.style.display = 'none';
+}
+
+function switchAuthTab(tab) {
+  if (tab === 'login') {
+    dom.tabLogin.classList.add('active');
+    dom.tabRegister.classList.remove('active');
+    dom.loginForm.style.display = 'block';
+    dom.registerForm.style.display = 'none';
+    dom.loginError.style.display = 'none';
+  } else {
+    dom.tabRegister.classList.add('active');
+    dom.tabLogin.classList.remove('active');
+    dom.registerForm.style.display = 'block';
+    dom.loginForm.style.display = 'none';
+    dom.regError.style.display = 'none';
+  }
+}
+
+async function doRegister() {
+  const email = dom.regEmail.value.trim();
+  const password = dom.regPassword.value;
+  const password2 = dom.regPassword2.value;
+
+  if (!email || !password) { dom.regError.textContent = '请填写所有字段'; dom.regError.style.display = 'block'; return; }
+  if (password !== password2) { dom.regError.textContent = '两次密码不一致'; dom.regError.style.display = 'block'; return; }
+  if (password.length < 6) { dom.regError.textContent = '密码至少6位'; dom.regError.style.display = 'block'; return; }
+  if (!email.includes('@')) { dom.regError.textContent = '邮箱格式不对'; dom.regError.style.display = 'block'; return; }
+
+  dom.regError.style.display = 'none';
+  try {
+    const data = await cloudFetch('/register', { method: 'POST', body: JSON.stringify({ email, password }) });
+    authToken = data.token;
+    authUser = data.user;
+    localStorage.setItem('qingh_token', authToken);
+    localStorage.setItem('qingh_user', JSON.stringify(authUser));
+    closeAuthModal();
+    updateAuthUI();
+    toast('注册成功！开始同步聊天记录 ✅', 'success');
+    // Create first session
+    await createCloudSession('新的对话', state.mode);
+    await cloudPull(true);
+  } catch (e) {
+    dom.regError.textContent = e.message;
+    dom.regError.style.display = 'block';
+  }
+}
+
+async function doLogin() {
+  const email = dom.loginEmail.value.trim();
+  const password = dom.loginPassword.value;
+  if (!email || !password) { dom.loginError.textContent = '请填写邮箱和密码'; dom.loginError.style.display = 'block'; return; }
+
+  dom.loginError.style.display = 'none';
+  try {
+    const data = await cloudFetch('/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    authToken = data.token;
+    authUser = data.user;
+    localStorage.setItem('qingh_token', authToken);
+    localStorage.setItem('qingh_user', JSON.stringify(authUser));
+    // Sync stored API key to cloud if different
+    if (state.apiKey && data.user.api_key !== state.apiKey) {
+      cloudFetch('/user/api-key', {
+        method: 'PUT',
+        body: JSON.stringify({ api_key: state.apiKey, api_provider: state.apiProvider, model: state.model })
+      }).catch(() => {});
+    }
+    // If user has a cloud API key and local is empty, pull it
+    if (!state.apiKey && data.user.api_key) {
+      state.apiKey = data.user.api_key;
+      if (data.user.api_provider) state.apiProvider = data.user.api_provider;
+      if (data.user.model) state.model = data.user.model;
+      saveAll();
+    }
+    closeAuthModal();
+    updateAuthUI();
+    toast('登录成功！数据已同步 ☁️', 'success');
+    await cloudPull(true);
+    await loadCloudSessions();
+  } catch (e) {
+    dom.loginError.textContent = e.message;
+    dom.loginError.style.display = 'block';
+  }
+}
+
+function doLogout() {
+  if (state.isLoading) { toast('AI 正在生成中，请先停止', 'info'); return; }
+  confirm('退出登录后，本地数据不会丢失。再次登录会从云端拉回数据。\n\n确定退出？', () => {
+    authToken = '';
+    authUser = null;
+    currentSessionId = '';
+    localStorage.removeItem('qingh_token');
+    localStorage.removeItem('qingh_user');
+    localStorage.removeItem('qingh_session_id');
+    cloudSessions = [];
+    updateAuthUI();
+    renderCloudSessions();
+    toast('已退出登录', 'info');
+  });
+}
+
+// ==================== CLOUD SESSIONS ====================
+async function loadCloudSessions() {
+  if (!authToken) return;
+  try {
+    cloudSessions = await cloudFetch('/sessions');
+    renderCloudSessions();
+    // If no current session, pick first one
+    if (!currentSessionId && cloudSessions.length > 0) {
+      currentSessionId = cloudSessions[0].id;
+      localStorage.setItem('qingh_session_id', currentSessionId);
+      await cloudPull(true);
+      renderAll();
+      updateUI();
+    }
+  } catch (e) { console.error('Load sessions error:', e); }
+}
+
+async function createCloudSession(title, mode) {
+  if (!authToken) {
+    // Local-only: just clear
+    state.messages = [];
+    saveAll();
+    renderAll();
+    updateUI();
+    return;
+  }
+  try {
+    const data = await cloudFetch('/sessions', {
+      method: 'POST',
+      body: JSON.stringify({ title: title || '新的对话', mode: mode || state.mode }),
+    });
+    cloudSessions.unshift(data);
+    currentSessionId = data.id;
+    localStorage.setItem('qingh_session_id', currentSessionId);
+    // Clear local state
+    state.messages = [];
+    state.supNote = '';
+    state.uploadedFiles = [];
+    saveAll();
+    renderAll();
+    renderFileChips();
+    updateUI();
+    renderCloudSessions();
+    toast('新对话已创建 ☁️', 'success');
+  } catch (e) {
+    toast('创建会话失败: ' + e.message, 'error');
+  }
+}
+
+async function switchCloudSession(sessionId) {
+  if (!authToken || !sessionId || sessionId === currentSessionId) return;
+  // Save current first
+  if (currentSessionId) {
+    const msgsToSync = state.messages.filter(m => m.role !== 'system');
+    if (msgsToSync.length > 0) {
+      cloudFetch(`/sessions/${currentSessionId}/messages`, {
+        method: 'POST', body: JSON.stringify({ messages: msgsToSync }),
+      }).catch(() => {});
+    }
+  }
+  currentSessionId = sessionId;
+  localStorage.setItem('qingh_session_id', currentSessionId);
+  // Clear local
+  state.messages = [];
+  state.supNote = '';
+  state.uploadedFiles = [];
+  saveAll();
+  // Pull from cloud
+  await cloudPull(true);
+  renderAll();
+  renderFileChips();
+  updateUI();
+  renderCloudSessions();
+  toast('已切换对话', 'info');
+}
+
+async function deleteCloudSession(sessionId) {
+  if (!authToken) return;
+  try {
+    await cloudFetch(`/sessions/${sessionId}`, { method: 'DELETE' });
+    cloudSessions = cloudSessions.filter(s => s.id !== sessionId);
+    if (currentSessionId === sessionId) {
+      currentSessionId = cloudSessions[0]?.id || '';
+      localStorage.setItem('qingh_session_id', currentSessionId);
+      state.messages = [];
+      state.supNote = '';
+      saveAll();
+      if (currentSessionId) await cloudPull(true);
+    }
+    renderCloudSessions();
+    renderAll();
+    updateUI();
+    toast('对话已删除', 'info');
+  } catch (e) {
+    toast('删除失败: ' + e.message, 'error');
+  }
+}
+
+function renderCloudSessions() {
+  if (!dom.sessionList) return;
+  dom.sessionList.innerHTML = '';
+  if (!cloudSessions.length) {
+    dom.sessionList.innerHTML = '<div class="empty-hint">还没有对话记录</div>';
+    return;
+  }
+  cloudSessions.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+    div.innerHTML = `
+      <span class="ses-icon">💬</span>
+      <span class="ses-name">${esc(s.title || '未命名')}</span>
+      <span class="ses-synced" title="已同步"></span>
+      <button class="ses-del" data-sid="${s.id}" title="删除">×</button>
+    `;
+    div.addEventListener('click', e => {
+      if (e.target.closest('.ses-del')) {
+        e.stopPropagation();
+        confirm('确定删除这个对话吗？', () => deleteCloudSession(s.id));
+      } else {
+        switchCloudSession(s.id);
+      }
+    });
+    dom.sessionList.appendChild(div);
+  });
+}
+
+// ==================== MOBILE HELPERS ====================
+function isMobile(){return window.matchMedia('(max-width:768px)').matches}
+
+function openSidebar(){
+  dom.sidebar.classList.add('open');
+  dom.sidebarBackdrop.style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeSidebar(){
+  dom.sidebar.classList.remove('open');
+  dom.sidebarBackdrop.style.display='none';
+  if(isMobile()) document.body.style.overflow='';
+}
+
+function toggleSidebar(){
+  dom.sidebar.classList.contains('open')?closeSidebar():openSidebar();
+}
+
+// Swipe gesture detection
+let _swipeStartX=0,_swipeStartY=0,_swipeActive=false;
+function initSwipeGestures(){
+  const mainArea=document.querySelector('.main-area');
+  mainArea.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    _swipeStartX=e.touches[0].clientX;
+    _swipeStartY=e.touches[0].clientY;
+    _swipeActive=true;
+  },{passive:true});
+
+  mainArea.addEventListener('touchend',e=>{
+    if(!_swipeActive)return;
+    _swipeActive=false;
+    const dx=(e.changedTouches[0]?.clientX||_swipeStartX)-_swipeStartX;
+    const dy=Math.abs((e.changedTouches[0]?.clientY||_swipeStartY)-_swipeStartY);
+    // Right swipe from left edge → open sidebar
+    if(dx>60&&Math.abs(dx)>dy&&_swipeStartX<30&&isMobile()){
+      openSidebar();
+    }
+  },{passive:true});
+
+  // Swipe left on sidebar → close
+  dom.sidebar.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    _swipeStartX=e.touches[0].clientX;
+    _swipeStartY=e.touches[0].clientY;
+    _swipeActive=true;
+  },{passive:true});
+
+  dom.sidebar.addEventListener('touchend',e=>{
+    if(!_swipeActive||!dom.sidebar.classList.contains('open'))return;
+    _swipeActive=false;
+    const dx=(e.changedTouches[0]?.clientX||_swipeStartX)-_swipeStartX;
+    const dy=Math.abs((e.changedTouches[0]?.clientY||_swipeStartY)-_swipeStartY);
+    if(dx<-50&&Math.abs(dx)>dy){
+      closeSidebar();
+    }
+  },{passive:true});
+}
+
+// iOS Safari viewport height fix
+function fixViewportHeight(){
+  const vh=window.innerHeight*0.01;
+  document.documentElement.style.setProperty('--vh',`${vh}px`);
+  // Also fix app-layout height
+  const appLayout=document.querySelector('.app-layout');
+  if(appLayout) appLayout.style.height=window.innerHeight+'px';
+}
+
+function scrollToBottom(){
+  requestAnimationFrame(()=>{
+    dom.chatContainer.scrollTop=dom.chatContainer.scrollHeight;
+  });
+}
+
+// Handle keyboard show/hide on mobile
+function initKeyboardHandling(){
+  const initialHeight=window.innerHeight;
+  let lastHeight=initialHeight;
+  window.addEventListener('resize',()=>{
+    if(!isMobile())return;
+    const newHeight=window.innerHeight;
+    // Keyboard opened
+    if(newHeight<lastHeight-100){
+      fixViewportHeight();
+      scrollToBottom();
+    }
+    // Keyboard closed
+    if(newHeight>lastHeight+100){
+      fixViewportHeight();
+    }
+    lastHeight=newHeight;
+  });
+
+  // Focus handling for input
+  dom.userInput.addEventListener('focus',()=>{
+    if(isMobile()){
+      setTimeout(scrollToBottom,300);
+    }
+  });
+}
 
 // ==================== INIT ====================
 function init(){
@@ -732,6 +1540,20 @@ function init(){
   bindEvents();
   renderAll();
   renderWorlds();renderChars();
+  // Auth / Cloud
+  updateAuthUI();
+  if (authToken && authUser) {
+    loadCloudSessions();
+    cloudPull(true);
+  }
+  // Mobile init
+  fixViewportHeight();
+  initSwipeGestures();
+  initKeyboardHandling();
+  window.addEventListener('resize',()=>{fixViewportHeight();if(!isMobile()){dom.sidebar.classList.remove('open');dom.sidebarBackdrop.style.display='none';document.body.style.overflow='';}});
+  window.addEventListener('orientationchange',()=>{setTimeout(fixViewportHeight,100)});
+  // Close sidebar when clicking a world/char item on mobile
+  if(isMobile()) closeSidebar();
 }
 
 function populateSettings(){
@@ -875,12 +1697,14 @@ function renderChars(){
 function selectWorld(id){
   if(state.activeWorldId===id){state.activeWorldId=null}else{state.activeWorldId=id}
   saveAll();updateUI();renderWorlds();renderChars();
+  if(isMobile()) closeSidebar();
   if(state.activeWorldId) toast('已选择世界观：'+getWorld(state.activeWorldId).name,'info');
   else toast('已取消世界观选择','info');
 }
 
 // ==================== WORLD CRUD ====================
 function openWorldModal(editId){
+  if(isMobile()) closeSidebar();
   dom.worldEditId.value=editId||'';
   dom.worldModalTitle.textContent=editId?'✏️ 编辑世界观':'🌍 新建世界观';
   dom.btnDeleteWorld.style.display=editId?'inline-block':'none';
@@ -918,6 +1742,7 @@ function saveWorld(){
     state.worlds.push({id:'w_'+Date.now(),name,color,description,createdAt:Date.now()});
   }
   saveAll();renderWorlds();updateUI();closeWorldModal();
+  if (authToken) cloudFetch('/worlds', { method: 'POST', body: JSON.stringify({ worlds: state.worlds }) }).catch(() => {});
   toast(editId?'世界观已更新 ✅':'世界观已创建 ✅','success');
 }
 
@@ -938,6 +1763,7 @@ function deleteWorld(id){
 
 // ==================== CHARACTER CRUD ====================
 function openCharModal(editId){
+  if(isMobile()) closeSidebar();
   dom.charEditId.value=editId||'';
   dom.charModalTitle.textContent=editId?'✏️ 编辑角色卡':'👤 新建角色卡';
   dom.btnDeleteChar.style.display=editId?'inline-block':'none';
@@ -969,6 +1795,7 @@ function saveChar(){
     state.characters.push({id:'c_'+Date.now(),name,worldId,description,createdAt:Date.now()});
   }
   saveAll();renderWorlds();renderChars();updateUI();closeCharModal();
+  if (authToken) cloudFetch('/characters', { method: 'POST', body: JSON.stringify({ characters: state.characters }) }).catch(() => {});
   toast(editId?'角色卡已更新 ✅':'角色卡已创建 ✅','success');
 }
 
@@ -1146,6 +1973,8 @@ async function sendMessage(){
     const reply=await callAPIWithAbort(buildMessages(content,fileContent),state._abortController.signal);
     removeTyping(typing);state.messages.push({role:'assistant',content:reply});
     saveAll();appendBubble('assistant',reply,state.messages.length-1);scrollBottom();updateUI();
+    // Auto-sync if logged in
+    if (authToken && currentSessionId) cloudSyncAll();
   }catch(e){
     removeTyping(typing);
     if(e.name==='AbortError'){return}
@@ -1243,12 +2072,14 @@ function addSupNote(val){
   const notes=getSupNotes();notes.push(val);
   state.supNote=notes.join('\n');saveAll();
   updateSupBar();renderAll();
+  if (authToken && currentSessionId) syncSupNotes();
 }
 
 function updateSupNote(idx,val){
   const notes=getSupNotes();notes[idx]=val;
   state.supNote=notes.join('\n');saveAll();
   updateSupBar();renderAll();
+  if (authToken && currentSessionId) syncSupNotes();
 }
 
 function removeSupNote(idx){
@@ -1256,11 +2087,13 @@ function removeSupNote(idx){
   state.supNote=notes.join('\n');saveAll();
   updateSupBar();renderAll();
   if(!notes.length) toast('补充设定已全部清除','info');
+  if (authToken && currentSessionId) syncSupNotes();
 }
 
 function clearAllSupNotes(){
   state.supNote='';saveAll();
   updateSupBar();renderAll();
+  if (authToken && currentSessionId) syncSupNotes();
   toast('已清除','info');
 }
 
@@ -1326,6 +2159,7 @@ function removeTyping(el){if(el&&el.parentNode)el.remove()}
 
 // ==================== EXPORT TXT ====================
 function exportTXT(){
+  if(isMobile()) closeSidebar();
   const msgs=state.messages.filter(m=>m.role!=='system');
   if(!msgs.length){toast('没有可导出的对话','info');return}
   let txt='';
@@ -1356,6 +2190,7 @@ function exportTXT(){
 
 // ==================== CLEAR ====================
 function clearChat(){
+  if(isMobile()) closeSidebar();
   confirm('确定清空所有对话和上传文件吗？（世界观和角色卡不受影响）',()=>{
     state.messages=[];state.uploadedFiles=[];
     saveAll();renderAll();renderFileChips();updateUI();
@@ -1391,10 +2226,14 @@ function updateUI(){
       const chars=getWorldChars(state.activeWorldId);
       dom.awChars.textContent=chars.length?`(${chars.length}个角色: ${chars.map(c=>c.name).join('、')})`:'';
       dom.contextWorld.textContent=w.name;
+      // Hide sup-bar hamburger since world bar has one
+      if(dom.hamburgerBtn2) dom.hamburgerBtn2.style.display='none';
     }
   }else{
     dom.activeWorldBar.style.display='none';
     dom.contextWorld.textContent='无';
+    // Show sup-bar hamburger
+    if(dom.hamburgerBtn2 && isMobile()) dom.hamburgerBtn2.style.display='flex';
   }
 
   // Context bar
@@ -1464,6 +2303,7 @@ function scrollBottom(){requestAnimationFrame(()=>{dom.chatContainer.scrollTop=d
 
 // ==================== SETTINGS ====================
 function openSettings(){
+  if(isMobile()) closeSidebar();
   dom.apiProvider.value=state.apiProvider;dom.apiKeyInput.value=state.apiKey;
   dom.apiKeyInput.placeholder=PROVIDERS[state.apiProvider]?.keyPlaceholder||'';
   dom.baiduSecretKey.value=state.baiduSecretKey;dom.customApiUrl.value=state.customApiUrl;
@@ -1480,7 +2320,15 @@ function saveSettings(){
   state.apiKey=k;state.apiProvider=p;state.baiduSecretKey=dom.baiduSecretKey.value.trim();
   state.customApiUrl=dom.customApiUrl.value.trim();state.model=dom.modelSelect.value;
   state.baiduAccessToken=null;state.baiduTokenExpiry=0;
-  saveAll();updateUI();closeSettings();toast('设置已保存 ✅','success');
+  saveAll();updateUI();closeSettings();
+  // Sync API key to cloud
+  if (authToken) {
+    cloudFetch('/user/api-key', {
+      method: 'PUT',
+      body: JSON.stringify({ api_key: k, api_provider: p, model: state.model, baidu_secret_key: state.baiduSecretKey, custom_api_url: state.customApiUrl })
+    }).catch(() => {});
+  }
+  toast('设置已保存 ✅','success');
 }
 
 // ==================== FILE UPLOAD ====================
@@ -1544,6 +2392,29 @@ function closeConfirm(){dom.confirmModal.style.display='none';_confirmCallback=n
 
 // ==================== EVENTS ====================
 function bindEvents(){
+  // ---- Cloud / Auth events ----
+  dom.btnShowAuth.addEventListener('click', () => openAuthModal('login'));
+  dom.tabLogin.addEventListener('click', () => switchAuthTab('login'));
+  dom.tabRegister.addEventListener('click', () => switchAuthTab('register'));
+  dom.btnLogin.addEventListener('click', doLogin);
+  dom.btnRegister.addEventListener('click', doRegister);
+  dom.btnCloseAuth.addEventListener('click', closeAuthModal);
+  dom.btnCloseAuth2.addEventListener('click', closeAuthModal);
+  dom.authModal.addEventListener('click', e => { if (e.target === dom.authModal) closeAuthModal(); });
+  dom.btnLogout.addEventListener('click', doLogout);
+
+  // Enter key in auth inputs
+  [dom.loginEmail, dom.loginPassword].forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+  [dom.regEmail, dom.regPassword, dom.regPassword2].forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+  });
+
+  // Sessions
+  dom.btnNewSession.addEventListener('click', () => createCloudSession('新的对话', state.mode));
+
+  // ---- Message ----
   // Send — click button OR Enter (Ctrl+Enter = newline)
   dom.btnSend.addEventListener('click',()=>{state.isLoading?stopGeneration():sendMessage()});
   dom.userInput.addEventListener('keydown',e=>{
@@ -1591,7 +2462,7 @@ function bindEvents(){
 
   // World
   dom.btnAddWorld.addEventListener('click',()=>openWorldModal(null));
-  dom.btnImportWorld.addEventListener('click',()=>dom.worldFileInput.click());
+  dom.btnImportWorld.addEventListener('click',()=>{if(isMobile())closeSidebar();dom.worldFileInput.click()});
   dom.worldFileInput.addEventListener('change',async ()=>{if(dom.worldFileInput.files.length){try{await importWorldFromFile(dom.worldFileInput.files[0])}catch(e){toast('导入失败: '+e.message,'error')}dom.worldFileInput.value=''}});
   dom.btnSaveWorld.addEventListener('click',saveWorld);
   dom.btnCancelWorld.addEventListener('click',closeWorldModal);
@@ -1601,7 +2472,7 @@ function bindEvents(){
 
   // Char
   dom.btnAddChar.addEventListener('click',()=>openCharModal(null));
-  dom.btnImportChar.addEventListener('click',()=>dom.charFileInput.click());
+  dom.btnImportChar.addEventListener('click',()=>{if(isMobile())closeSidebar();dom.charFileInput.click()});
   dom.charFileInput.addEventListener('change',async ()=>{if(dom.charFileInput.files.length){try{await importCharFromFile(dom.charFileInput.files[0])}catch(e){toast('导入失败: '+e.message,'error')}dom.charFileInput.value=''}});
   dom.btnSaveChar.addEventListener('click',saveChar);
   dom.btnCancelChar.addEventListener('click',closeCharModal);
@@ -1637,9 +2508,25 @@ function bindEvents(){
   dom.btnConfirmNo.addEventListener('click',closeConfirm);
   dom.confirmModal.addEventListener('click',e=>{if(e.target===dom.confirmModal)closeConfirm()});
 
+  // Mobile sidebar
+  dom.hamburgerBtn.addEventListener('click',toggleSidebar);
+  dom.hamburgerBtn2.addEventListener('click',toggleSidebar);
+  dom.sidebarCloseBtn.addEventListener('click',closeSidebar);
+  dom.sidebarBackdrop.addEventListener('click',closeSidebar);
+
+  // Close sidebar on world select (mobile)
+  ['worldList','charList'].forEach(id=>{
+    document.getElementById(id).addEventListener('click',e=>{
+      if(e.target.closest('.item-row')||e.target.closest('.archive-group')||e.target.closest('.sub-item')){
+        if(isMobile()) closeSidebar();
+      }
+    });
+  });
+
   // Global
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
+      if(dom.sidebar.classList.contains('open')){closeSidebar();return}
       if(dom.settingsModal.style.display==='flex')closeSettings();
       if(dom.worldModal.style.display==='flex')closeWorldModal();
       if(dom.charModal.style.display==='flex')closeCharModal();
