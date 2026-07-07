@@ -831,6 +831,10 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
     <h3>⚙️ API 设置</h3>
     <p>Key 仅保存在浏览器本地，不上传任何服务器。</p>
     <div class="form-group">
+      <label>☁️ 云服务地址（Worker URL）</label>
+      <input type="text" id="settingsCloudUrl" placeholder="https://qingh-studio.xxx.workers.dev">
+    </div>
+    <div class="form-group">
       <label>API 提供商</label>
       <select id="apiProvider"></select>
     </div>
@@ -886,6 +890,10 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
     <!-- Login form -->
     <div id="loginForm">
       <div class="form-group">
+        <label>☁️ 云服务地址（你的 Worker URL）</label>
+        <input type="text" id="cloudApiUrl" placeholder="https://qingh-studio.xxx.workers.dev">
+      </div>
+      <div class="form-group">
         <label>邮箱</label>
         <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
       </div>
@@ -933,10 +941,13 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
    数据存 localStorage + Cloudflare D1 云同步
    ================================================================== */
 
-// ---------- 云 API 地址（部署后替换为你的 Worker URL）----------
-const CLOUDFLARE_WORKER_URL = 'https://qingh-studio.wwy4v1230.workers.dev';
-const API = CLOUDFLARE_WORKER_URL + '/api';
-
+// ---------- 云 API 地址（用户可自行配置）----------
+function getCloudApiUrl() {
+  return localStorage.getItem('qingh_cloud_url') || '';
+}
+function setCloudApiUrl(url) {
+  localStorage.setItem('qingh_cloud_url', url.replace(/\/+$/, ''));
+}
 // ---------- 云端状态 ----------
 let authToken = localStorage.getItem('qingh_token') || '';
 let authUser = null;
@@ -1065,7 +1076,7 @@ const dom={
   sidebar:$('#sidebar'),
   // Cloud / Auth
   authModal:$('#authModal'), loginForm:$('#loginForm'), registerForm:$('#registerForm'),
-  loginEmail:$('#loginEmail'), loginPassword:$('#loginPassword'), loginError:$('#loginError'),
+  cloudApiUrl:$('#cloudApiUrl'), loginEmail:$('#loginEmail'), loginPassword:$('#loginPassword'), loginError:$('#loginError'),
   regEmail:$('#regEmail'), regPassword:$('#regPassword'), regPassword2:$('#regPassword2'), regError:$('#regError'),
   btnLogin:$('#btnLogin'), btnRegister:$('#btnRegister'), btnShowAuth:$('#btnShowAuth'),
   btnCloseAuth:$('#btnCloseAuth'), btnCloseAuth2:$('#btnCloseAuth2'),
@@ -1082,9 +1093,11 @@ let _confirmCallback = null;
 
 // ==================== CLOUD API HELPERS ====================
 async function cloudFetch(path, opts = {}) {
+  const base = getCloudApiUrl();
+  if (!base) throw new Error('请先配置云服务地址');
   const headers = { 'Content-Type': 'application/json', ...opts.headers };
   if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-  const res = await fetch(API + path, { ...opts, headers });
+  const res = await fetch(base + '/api' + path, { ...opts, headers });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
@@ -1195,6 +1208,7 @@ function updateAuthUI() {
 }
 
 function openAuthModal(tab = 'login') {
+  dom.cloudApiUrl.value = getCloudApiUrl();
   dom.authModal.style.display = 'flex';
   switchAuthTab(tab);
 }
@@ -1222,6 +1236,10 @@ function switchAuthTab(tab) {
 }
 
 async function doRegister() {
+  const cloudUrl = dom.cloudApiUrl.value.trim();
+  if (!cloudUrl) { dom.regError.textContent = '请填写云服务地址'; dom.regError.style.display = 'block'; return; }
+  setCloudApiUrl(cloudUrl);
+
   const email = dom.regEmail.value.trim();
   const password = dom.regPassword.value;
   const password2 = dom.regPassword2.value;
@@ -1251,6 +1269,10 @@ async function doRegister() {
 }
 
 async function doLogin() {
+  const cloudUrl = dom.cloudApiUrl.value.trim();
+  if (!cloudUrl) { dom.loginError.textContent = '请填写云服务地址'; dom.loginError.style.display = 'block'; return; }
+  setCloudApiUrl(cloudUrl);
+
   const email = dom.loginEmail.value.trim();
   const password = dom.loginPassword.value;
   if (!email || !password) { dom.loginError.textContent = '请填写邮箱和密码'; dom.loginError.style.display = 'block'; return; }
@@ -2304,6 +2326,7 @@ function scrollBottom(){requestAnimationFrame(()=>{dom.chatContainer.scrollTop=d
 // ==================== SETTINGS ====================
 function openSettings(){
   if(isMobile()) closeSidebar();
+  $('#settingsCloudUrl').value = getCloudApiUrl();
   dom.apiProvider.value=state.apiProvider;dom.apiKeyInput.value=state.apiKey;
   dom.apiKeyInput.placeholder=PROVIDERS[state.apiProvider]?.keyPlaceholder||'';
   dom.baiduSecretKey.value=state.baiduSecretKey;dom.customApiUrl.value=state.customApiUrl;
@@ -2320,6 +2343,9 @@ function saveSettings(){
   state.apiKey=k;state.apiProvider=p;state.baiduSecretKey=dom.baiduSecretKey.value.trim();
   state.customApiUrl=dom.customApiUrl.value.trim();state.model=dom.modelSelect.value;
   state.baiduAccessToken=null;state.baiduTokenExpiry=0;
+  // Save cloud URL
+  const cloudUrl = $('#settingsCloudUrl').value.trim();
+  if (cloudUrl) setCloudApiUrl(cloudUrl);
   saveAll();updateUI();closeSettings();
   // Sync API key to cloud
   if (authToken) {
