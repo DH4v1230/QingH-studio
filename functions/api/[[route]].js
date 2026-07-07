@@ -173,36 +173,52 @@ async function handleRegister(request, env) {
   if (!email || !password) return json({ error: '邮箱和密码不能为空' }, 400);
   if (password.length < 6) return json({ error: '密码至少6位' }, 400);
 
-  const existing = await env.DB.prepare('SELECT id FROM users WHERE email=?').bind(email.toLowerCase().trim()).first();
+  const trimEmail = email.toLowerCase().trim();
+  if (!trimEmail.includes('@')) return json({ error: '邮箱格式不对' }, 400);
+
+  const existing = await env.DB.prepare('SELECT id FROM users WHERE email=? OR username=?').bind(trimEmail, trimEmail).first();
   if (existing) return json({ error: '该邮箱已注册' }, 409);
 
   const id = uuid();
   const pwHash = await hashPassword(password);
   await env.DB.prepare(
     'INSERT INTO users (id,email,password_hash) VALUES (?,?,?)'
-  ).bind(id, email.toLowerCase().trim(), pwHash).run();
+  ).bind(id, trimEmail, pwHash).run();
 
-  const token = await createJWT({ uid: id, email: email.toLowerCase().trim() });
-  return json({ token, user: { id, email: email.toLowerCase().trim(), vip_level: 0 } });
+  const token = await createJWT({ uid: id, email: trimEmail, role: 'user' });
+  return json({ token, user: { id, email: trimEmail, role: 'user', vip_level: 0 } });
 }
 
 async function handleLogin(request, env) {
-  const { email, password } = await request.json();
-  if (!email || !password) return json({ error: '邮箱和密码不能为空' }, 400);
+  const { email, username, login, password } = await request.json();
+  if (!password) return json({ error: '密码不能为空' }, 400);
 
-  const user = await env.DB.prepare('SELECT * FROM users WHERE email=?')
-    .bind(email.toLowerCase().trim()).first();
+  // Accept: email (old field), username, or login (new unified field)
+  const identifier = (login || email || username || '').trim();
+  if (!identifier) return json({ error: '请输入邮箱或用户名' }, 400);
+
+  let user;
+  if (identifier.includes('@')) {
+    user = await env.DB.prepare('SELECT * FROM users WHERE email=?')
+      .bind(identifier.toLowerCase()).first();
+  } else {
+    user = await env.DB.prepare('SELECT * FROM users WHERE username=?')
+      .bind(identifier).first();
+  }
+
   if (!user) return json({ error: '用户不存在' }, 404);
 
   const pwHash = await hashPassword(password);
   if (pwHash !== user.password_hash) return json({ error: '密码错误' }, 401);
 
-  const token = await createJWT({ uid: user.id, email: user.email });
+  const token = await createJWT({ uid: user.id, email: user.email || '', username: user.username || '', role: user.role || 'user' });
   return json({
     token,
     user: {
       id: user.id,
-      email: user.email,
+      email: user.email || '',
+      username: user.username || '',
+      role: user.role || 'user',
       api_key: user.api_key || '',
       api_provider: user.api_provider || 'anthropic',
       model: user.model || 'claude-sonnet-4-6',

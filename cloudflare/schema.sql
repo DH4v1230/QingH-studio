@@ -6,7 +6,9 @@
 -- 用户表
 CREATE TABLE IF NOT EXISTS users (
   id            TEXT PRIMARY KEY,
-  email         TEXT UNIQUE NOT NULL,
+  email         TEXT UNIQUE DEFAULT NULL,
+  username      TEXT UNIQUE DEFAULT NULL,
+  role          TEXT DEFAULT 'user',
   password_hash TEXT NOT NULL,
   api_key          TEXT DEFAULT '',
   api_provider     TEXT DEFAULT 'anthropic',
