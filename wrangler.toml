@@ -3,7 +3,7 @@
 # 前端 + API 共用 qingh-studio.pages.dev
 # ============================================================
 name = "qingh-studio"
-pages_build_output_dir = ".pages-deploy"
+pages_build_output_dir = "."
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
