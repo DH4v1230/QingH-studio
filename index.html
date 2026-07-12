@@ -348,8 +348,10 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
 .sup-bar .sup-add-row button:hover{background:#9178ff}
 .sup-bar .sup-clear-all{
   color:var(--text-muted);cursor:pointer;border:none;background:none;
-  font-size:.65rem;flex-shrink:0;padding:2px 6px;border-radius:50px;
-  transition:var(--transition);font-family:var(--font-sans);margin-left:auto;
+  font-size:.75rem;flex-shrink:0;padding:4px 6px;border-radius:50px;
+  transition:var(--transition);font-family:var(--font-sans);
+  display:flex;align-items:center;justify-content:center;
+  min-width:var(--touch-target);min-height:var(--touch-target);
 }
 .sup-bar .sup-clear-all:hover{color:var(--error);background:rgba(248,113,113,.1)}
 
@@ -519,14 +521,15 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
   .file-chip{font-size:.74rem;padding:4px 8px 4px 6px}
 
   /* Supplement bar */
-  .sup-bar{padding:4px 10px;flex-wrap:wrap;gap:6px}
+  .sup-bar{padding:4px 12px;flex-wrap:wrap;gap:6px}
   .sup-bar .hamburger{margin-right:2px;flex-shrink:0}
   .sup-bar .sup-left{gap:4px}
   .sup-bar .sup-label{font-size:.72rem}
   .sup-bar .sup-chip{font-size:.7rem;padding:3px 8px;max-width:200px}
-  .sup-bar .sup-add-row input{width:160px;font-size:.74rem}
-  .sup-bar .sup-add-row input:focus{width:220px}
-  .sup-bar .sup-chip.editing input{width:180px}
+  .sup-bar .sup-add-row input{width:140px;font-size:.74rem}
+  .sup-bar .sup-add-row input:focus{width:180px}
+  .sup-bar .sup-chip.editing input{width:160px}
+  .sup-bar .sup-clear-all{padding:4px 6px;font-size:.75rem;min-width:var(--touch-target);min-height:var(--touch-target)}
 
   /* Context bar */
   .context-bar{padding:3px 10px;font-size:.68rem;gap:6px}
@@ -732,9 +735,9 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
       <span class="sup-add-row">
         <input type="text" id="supInput" placeholder="新增设定…">
         <button id="spAdd" title="添加">+</button>
-        <button class="sup-clear-all" id="spClearAll" title="清除全部">🗑️</button>
       </span>
     </span>
+    <button class="sup-clear-all" id="spClearAll" title="清除全部">🗑️</button>
   </div>
 
   <!-- Chat -->
@@ -2212,7 +2215,7 @@ function clearChat(){
 // ==================== UI ====================
 function updateUI(){
   dom.welcomeScreen.style.display=(state.messages.length===0&&state.uploadedFiles.length===0)?'flex':'none';
-  dom.userInput.placeholder=state.mode==='novel'?'描述你想写的小说内容… (Enter 发送, Ctrl+Enter 换行)':'输入消息… (Enter 发送, Ctrl+Enter 换行)';
+  dom.userInput.placeholder=isMobile()?'':(state.mode==='novel'?'描述你想写的小说内容… (Enter 发送, Ctrl+Enter 换行)':'输入消息… (Enter 发送, Ctrl+Enter 换行)');
 
   // Send / Stop button toggle
   if(state.isLoading){
