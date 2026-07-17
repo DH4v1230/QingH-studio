@@ -529,7 +529,7 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
   .sup-bar .sup-add-row input{width:140px;font-size:.74rem}
   .sup-bar .sup-add-row input:focus{width:180px}
   .sup-bar .sup-chip.editing input{width:160px}
-  .sup-bar .sup-clear-all{padding:4px 6px;font-size:.75rem;min-width:var(--touch-target);min-height:var(--touch-target)}
+  .sup-bar .sup-clear-all{padding:4px 6px;font-size:.75rem;min-width:var(--touch-target);min-height:var(--touch-target);flex-shrink:0}
 
   /* Context bar */
   .context-bar{padding:3px 10px;font-size:.68rem;gap:6px}
@@ -604,6 +604,13 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
   .input-box textarea{font-size:.84rem}
   .modal{padding:16px 14px}
   .modal h3{font-size:.95rem}
+  /* Sup-bar — ensure trash icon stays visible on narrow screens */
+  .sup-bar{gap:4px;padding:4px 6px}
+  .sup-bar .sup-left{gap:2px}
+  .sup-bar .sup-label{font-size:.66rem}
+  .sup-bar .sup-add-row input{width:90px;font-size:.7rem;padding:4px 8px}
+  .sup-bar .sup-add-row input:focus{width:110px}
+  .sup-bar .sup-clear-all{min-width:36px;min-height:36px;padding:2px 4px;font-size:.7rem}
 }
 
 /* ===== LANDSCAPE MOBILE ===== */
@@ -1562,6 +1569,11 @@ function init(){
   // Mobile init
   fixViewportHeight();
   initSwipeGestures();
+  // Auto-update placeholder on mobile/desktop switch (resize / orientation change)
+  const _mobileMq = window.matchMedia('(max-width:768px)');
+  _mobileMq.addEventListener('change', updateUI);
+  // Initial placeholder fix (ensure correct state even if updateUI ran before full layout)
+  dom.userInput.placeholder = isMobile() ? '' : (state.mode === 'novel' ? '描述你想写的小说内容… (Enter 发送, Ctrl+Enter 换行)' : '输入消息… (Enter 发送, Ctrl+Enter 换行)');
   initKeyboardHandling();
   window.addEventListener('resize',()=>{fixViewportHeight();if(!isMobile()){dom.sidebar.classList.remove('open');dom.sidebarBackdrop.style.display='none';document.body.style.overflow='';}});
   window.addEventListener('orientationchange',()=>{setTimeout(fixViewportHeight,100)});
